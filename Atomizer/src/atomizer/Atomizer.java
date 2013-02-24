@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import java.util.Vector;
 
 /**
  *
@@ -23,7 +22,7 @@ import java.util.Vector;
  */
 public class Atomizer extends JPanel {
     
-    public  Vector<Particle> particles = new Vector<Particle>();
+    public  java.util.Vector<Particle> particles = new java.util.Vector<Particle>();
     
     public void paint(Graphics g) {
 
@@ -60,18 +59,39 @@ public class Atomizer extends JPanel {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         atomizer.particles.add(new Proton(30,30,new atomizer.Vector()));
+        atomizer.particles.add(new Proton(30,60,new atomizer.Vector()));
         atomizer.particles.add(new Electron(40,30,new atomizer.Vector()));
-        atomizer.particles.add(new Neutron(50,30,new atomizer.Vector()));
-        float dt=1000/60;//TODO fixed time step but not laggy
+        atomizer.particles.add(new Neutron(33,30,new atomizer.Vector()));
+        float dt=100/60;//TODO fixed time step but not laggy
         while(true){
             int size = atomizer.particles.size();
             for(int i=0;i<size;i++){
+                atomizer.particles.get(i).force = new atomizer.Vector();
+            }
+            for(int i=0;i<size;i++){
                 Particle particle = atomizer.particles.get(i);
                 for(int j=i+1;j<size;j++){
-                    
+                    Particle other = atomizer.particles.get(j);
+                    double distance = Vector.distance(particle.position,other.position);
+                    double distance2=distance*distance;
+                    if(particle.charge!=0 && other.charge!=0){
+                        atomizer.Vector electro = particle.position.sub(other.position).multiply(particle.charge*other.charge*0.1).divide(distance2);
+                        particle.force=particle.force.add(electro);
+                        other.force=other.force.sub(electro);
+                    }
+                    if(distance<0.33){
+                        Vector quantumCollision = particle.position.sub(other.position);
+                        particle.force=particle.force.add(quantumCollision);
+                        other.force=other.force.sub(quantumCollision);
+                    }
+                    if(distance<2.0 && (particle instanceof Proton || particle instanceof Neutron) && (other instanceof Proton || other instanceof Neutron)){
+                        Vector strong = particle.position.sub(other.position).divide(distance2).multiply(100);
+                        particle.force=particle.force.add(strong);
+                        other.force=other.force.sub(strong);//TODO?
+                    }
                 }
-                particle.velocity.add(particle.force.divide(particle.mass));
-                particle.position.add(particle.velocity);
+                particle.velocity=particle.velocity.add(particle.force.divide(particle.mass).multiply(dt));
+                particle.position=particle.position.add(particle.velocity.multiply(dt));
             }
             frame.repaint();
             try {

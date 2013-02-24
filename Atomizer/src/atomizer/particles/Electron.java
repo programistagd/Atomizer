@@ -13,7 +13,7 @@ import atomizer.Vector;
 public class Electron extends Particle {
     public Electron(int x,int y,Vector speed){
         super(x,y,speed);
-        mass = 1.0/1000.0;
+        mass = 1.0/50.0;//too little for scale
         charge = -1.0;
     }
 }
