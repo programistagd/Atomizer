@@ -10,10 +10,8 @@ import atomizer.Vector;
  *
  * @author radek
  */
-public class Neutron extends Particle{
-    public Neutron(double x,double y,Vector speed){
+public class Atom extends Particle{
+    public Atom(double x,double y,Vector speed){
         super(x,y,speed);
-        mass = 1;
-        charge = 0;
     }
 }

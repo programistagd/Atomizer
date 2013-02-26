@@ -22,7 +22,7 @@ public class Particle {//Everything's public because main class has optimization
     public Vector position = new Vector();
     
     
-    public Particle(int x,int y,Vector speed){
+    public Particle(double x,double y,Vector speed){
         position=new Vector(x,y);
         velocity = speed;
     }

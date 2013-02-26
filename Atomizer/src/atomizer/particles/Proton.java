@@ -11,7 +11,7 @@ import atomizer.Vector;
  * @author radek
  */
 public class Proton extends Particle{
-    public Proton(int x,int y,Vector speed){
+    public Proton(double x,double y,Vector speed){
         super(x,y,speed);
         mass = 1.0;
         charge = 1.0;
