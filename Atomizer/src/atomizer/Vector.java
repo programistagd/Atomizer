@@ -17,6 +17,11 @@ public class Vector {
         
     }
     
+    public Vector(Vector copy){
+        x=copy.x;
+        y=copy.y;
+    }
+    
     public Vector(double x,double y){
         this.x=x;
         this.y=y;

@@ -15,6 +15,8 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +29,8 @@ import javax.swing.event.MouseInputListener;
  * @author radek
  */
 public class Atomizer extends JPanel implements MouseInputListener, KeyListener {
+    
+    BufferedImage circle;
     
     public Atomizer(){
         addMouseListener(this);
@@ -54,6 +58,7 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
 
     
      public boolean pause = false;
+     public boolean walls = false,sphere=false;
      
     @Override
     public void keyPressed(KeyEvent ke) {
@@ -68,6 +73,12 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
         }
         else if(ke.getKeyCode()==KeyEvent.VK_SPACE){
             pause = !pause;
+        }
+        else if(ke.getKeyCode()==KeyEvent.VK_INSERT){
+            walls=!walls;
+        }
+        else if(ke.getKeyCode()==KeyEvent.VK_HOME){
+            sphere=!sphere;
         }
         else if(ke.getKeyCode()==KeyEvent.VK_DELETE){
             particles = new CopyOnWriteArrayList<>();
@@ -88,7 +99,8 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
     public void paint(Graphics g) {
 
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setBackground(new Color(0,0,0));
+        g2d.setColor(new Color(170,170,170));
+        g2d.fillRect(0, 0, 800, 600);
         if(isPressed){
             g2d.setColor(Color.BLACK);
             g2d.drawLine(currentX, currentY, startX, startY);
@@ -124,6 +136,16 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
                 g2d.fillOval((int)pos.x-2,(int)pos.y-2 , 4, 4);
             }
         }
+        if(walls){
+            g2d.setColor(Color.BLACK);
+            g2d.fillRect(0, 0, 800, 5);
+            g2d.fillRect(0, 0, 5, 600);
+            g2d.fillRect(0, 595, 800, 5);
+            g2d.fillRect(795, 0, 5, 600);
+        }
+        if(sphere){
+            g2d.drawImage(circle, 0, 0, null);
+        }
     }
     
     /**
@@ -139,6 +161,18 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
         frame.setVisible(true);
         frame.setFocusable(true);
         frame.addKeyListener(atomizer);
+        atomizer.circle = new BufferedImage(800, 600, BufferedImage.TYPE_4BYTE_ABGR);
+        for(int x=0;x<800;x++){
+            for(int y=0;y<600;y++){
+                double dx=400.0-x;double dy=y-300.0;
+                if(Math.sqrt(dx*dx+dy*dy)<=300.0){//if(dx*dx+dy*dy<=300.0*300.0){
+                    atomizer.circle.setRGB(x, y, (new Color(0.0f,0.0f,0.0f,0.0f)).getRGB()); 
+                }
+                else{
+                    atomizer.circle.setRGB(x, y, (new Color(0.0f,0.0f,0.0f,0.6f)).getRGB()); 
+                }
+            }
+        }
         /*atomizer.particles.add(new Proton(30,30,new atomizer.Vector()));
         atomizer.particles.add(new Proton(30,60,new atomizer.Vector()));
         atomizer.particles.add(new Electron(40,30,new atomizer.Vector()));
@@ -271,6 +305,43 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
                 
                 particle.velocity=particle.velocity.add(particle.force.divide(particle.mass).multiply(dt));
                 particle.position=particle.position.add(particle.velocity.multiply(dt));
+                if(atomizer.walls){
+                    if(particle.position.x<5){
+                        particle.position.x=5;
+                    }
+                    if(particle.position.x>795){
+                        particle.position.x=795;
+                    }
+                    if(particle.position.y<5){
+                        particle.position.y=5;
+                    }
+                    if(particle.position.y>595){
+                        particle.position.y=595;
+                    }
+                }
+                if(atomizer.sphere){
+                    /*Vector p = new Vector(particle.position);
+                    Vector c = new Vector(400,300);
+                    p.sub(c);
+                    double l =p.getLength();
+                    if(l>=300.0){
+                        p.divide(l).multiply(300);
+                        p.add(c);//FIXME why it doesn't work?!?!
+                        particle.position=new Vector(p);
+                    }*/
+                    /*double dx=particle.position.x-400.0;
+                    double dy=particle.position.y-300.0;
+                    if(dx*dx+dy*dy>300.0*300.0){
+                        double angle = Math.atan(dy/dx);
+                        if(dx>0){
+                            particle.position.x=400.0+Math.cos(angle)*300.0;
+                        }
+                        else{
+                            particle.position.x=400.0-Math.cos(-angle)*300.0;
+                        }
+                        particle.position.y=300.0+Math.sin(angle)*300.0;
+                    }*/
+                }
             }
             frame.setTitle("Atomizer");
             }
