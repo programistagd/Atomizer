@@ -15,6 +15,7 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -67,6 +68,9 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
         }
         else if(ke.getKeyCode()==KeyEvent.VK_SPACE){
             pause = !pause;
+        }
+        else if(ke.getKeyCode()==KeyEvent.VK_DELETE){
+            particles = new CopyOnWriteArrayList<>();
         }
     }
 
@@ -203,7 +207,7 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
                         particle.force=particle.force.sub(gravity);
                         other.force=other.force.add(gravity);
                         if(particle.charge!=0 && other.charge!=0){
-                            atomizer.Vector electro = particle.position.sub(other.position).multiply(particle.charge*other.charge).divide(distance2*5.0);
+                            atomizer.Vector electro = particle.position.sub(other.position).multiply(particle.charge*other.charge).divide(distance2*10.0);
                             particle.force=particle.force.add(electro);
                             other.force=other.force.sub(electro);
                         }
@@ -239,10 +243,10 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
                 }
                 
                 if(particle instanceof Atom){
-                    if(particle.charge<particle.mass-particle.charge+0.5 && particle.mass>1.5 && Math.random()>0.93){
+                    if(particle.charge<particle.mass-particle.charge+(Math.random()*3.0-1.1) && particle.mass>1.5 && Math.random()>0.98){
                         Vector decay = (new Vector(Math.random()*2.0-1.0, Math.random()*2.0-1.0));
                         decay = decay.divide(decay.getLength()).multiply((particle.mass+1));
-                        if(Math.random()>0.45){
+                        if(Math.random()>0.4){
                             //Neutron emission
                             particle.mass-=1;
                             particle.force.add(decay.divide(particle.mass).negate());
@@ -310,16 +314,60 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
 
     @Override
     public void mouseReleased(MouseEvent me) {
+        Vector v;
+        if(me.getButton()==me.BUTTON3){
+            Vector mouse = new Vector(me.getX(),me.getY());
+            Particle near=null;double d=Double.POSITIVE_INFINITY;
+            for(java.util.Iterator<Particle> i = particles.iterator();i.hasNext();){
+                Particle c = i.next();
+                if(c instanceof Atom){
+                    double dist = Vector.distance(c.position, mouse);
+                    if(dist<d){
+                        near = c;
+                        d=dist;
+                    }
+                }
+            }
+            if(near != null){
+                double orbitL = d;
+                double m=0;
+                switch(selected){
+                    case neutron:
+                    case proton:
+                        m=1.0;
+                    break;
+                    case electron:
+                        m=1.0/50.0;
+                }
+                Vector gravity = near.position.sub(mouse).multiply(near.mass*m).divide(orbitL*orbitL*100.0);
+                if(selected==Part.electron){
+                    gravity.add(near.position.sub(mouse).multiply(near.charge*-1.0).divide(orbitL*orbitL*10.0));
+                }
+                
+                v = gravity.divide(gravity.getLength());//normalize
+                v.x=v.x;
+                v.y=-v.y;//perpendicular
+                
+                //F=m*v^2*l; v^2=l*f/m; v=sqrt(l*grav/mass)
+                v.multiply(Math.sqrt(orbitL*gravity.getLength()/m));
+           }
+            else{
+                v=new Vector((startX-me.getX())/50.0,(startY-me.getY())/50.0);
+            }
+        }
+        else{
+            v=new Vector((startX-me.getX())/50.0,(startY-me.getY())/50.0);
+        }
         isPressed=false;
         switch(selected){
             case neutron:
-                particles.add(new Neutron(me.getX(), me.getY(), new Vector((startX-me.getX())/50.0,(startY-me.getY())/50.0)));
+                particles.add(new Neutron(startX, startY, v));
             break;
             case electron:
-                particles.add(new Electron(me.getX(), me.getY(), new Vector((startX-me.getX())/50.0,(startY-me.getY())/50.0)));
+                particles.add(new Electron(startX, startY, v));
             break;
             case proton:
-                particles.add(new Proton(me.getX(), me.getY(), new Vector((startX-me.getX())/50.0,(startY-me.getY())/50.0)));
+                particles.add(new Proton(startX, startY, v));
             break;
         }
     }
