@@ -10,6 +10,7 @@ import atomizer.particles.Neutron;
 import atomizer.particles.Particle;
 import atomizer.particles.Proton;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
@@ -37,6 +38,8 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
         addMouseMotionListener(this);
         addKeyListener(this);
         setFocusable(true);
+        setSize(800, 600);
+        setMinimumSize(new Dimension(800,600));
     }
     
     
@@ -118,11 +121,13 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
                 max=Math.abs(max);
                 g2d.setColor((new Color((float)(Math.abs(p.charge)/max),(float)((p.mass-p.charge)/max),0.1f)));
                 atomizer.Vector pos = p.position;//TODO view transformation
-                g2d.fillOval((int)(pos.x-p.mass),(int)(pos.y-p.mass) , (int)p.mass*2, (int)p.mass*2);
+                g2d.fillOval((int)(pos.x-p.mass*2),(int)(pos.y-p.mass*2) , (int)p.mass*4, (int)p.mass*4);
             }
             else if(p instanceof Electron){
-                g2d.setColor(Color.BLUE);
                 atomizer.Vector pos = p.position;//TODO view transformation
+                g2d.setColor(new Color(0.0f, 0.3f,1.0f,0.3f));
+                g2d.fillOval((int)pos.x-2,(int)pos.y-2 , 4, 4);
+                g2d.setColor(Color.BLUE);
                 g2d.fillOval((int)pos.x-1,(int)pos.y-1 , 2, 2);
             }
             else if(p instanceof Proton){
@@ -154,10 +159,12 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
     public static void main(String[] args) {
         Atomizer atomizer = new Atomizer();
         JFrame frame = new JFrame("Atomizer");
-        frame.add(atomizer);
+        frame.add(atomizer);//frame.getContentPane().add(atomizer);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
+        frame.pack();
+        frame.setSize(800, 600+frame.getInsets().top);
+        frame.setMinimumSize(new Dimension(800,600+frame.getInsets().top));//TODO works sometimes
         frame.setVisible(true);
         frame.setFocusable(true);
         frame.addKeyListener(atomizer);
@@ -165,7 +172,7 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
         for(int x=0;x<800;x++){
             for(int y=0;y<600;y++){
                 double dx=400.0-x;double dy=y-300.0;
-                if(Math.sqrt(dx*dx+dy*dy)<=300.0){//if(dx*dx+dy*dy<=300.0*300.0){
+                if(Math.sqrt(dx*dx+dy*dy)<=302.0){//if(dx*dx+dy*dy<=300.0*300.0){
                     atomizer.circle.setRGB(x, y, (new Color(0.0f,0.0f,0.0f,0.0f)).getRGB()); 
                 }
                 else{
@@ -320,27 +327,15 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
                     }
                 }
                 if(atomizer.sphere){
-                    /*Vector p = new Vector(particle.position);
+                    Vector p = new Vector(particle.position);
                     Vector c = new Vector(400,300);
-                    p.sub(c);
+                    p=p.sub(c);
                     double l =p.getLength();
                     if(l>=300.0){
-                        p.divide(l).multiply(300);
-                        p.add(c);//FIXME why it doesn't work?!?!
+                        p=p.divide(l).multiply(300);
+                        p=p.add(c);
                         particle.position=new Vector(p);
-                    }*/
-                    /*double dx=particle.position.x-400.0;
-                    double dy=particle.position.y-300.0;
-                    if(dx*dx+dy*dy>300.0*300.0){
-                        double angle = Math.atan(dy/dx);
-                        if(dx>0){
-                            particle.position.x=400.0+Math.cos(angle)*300.0;
-                        }
-                        else{
-                            particle.position.x=400.0-Math.cos(-angle)*300.0;
-                        }
-                        particle.position.y=300.0+Math.sin(angle)*300.0;
-                    }*/
+                    }
                 }
             }
             frame.setTitle("Atomizer");
