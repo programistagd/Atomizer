@@ -43,7 +43,7 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
     }
     
     
-    public  java.util.concurrent.CopyOnWriteArrayList<Particle> particles = new java.util.concurrent.CopyOnWriteArrayList<>();
+    public  java.util.concurrent.CopyOnWriteArrayList<Particle> particles = new java.util.concurrent.CopyOnWriteArrayList<Particle>();
 
     @Override
     public void keyTyped(KeyEvent ke) {
@@ -62,6 +62,9 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
     
      public boolean pause = false;
      public boolean walls = false,sphere=false;
+     
+     //public BufferedImage blur = null;
+     //public boolean isBlur = false;
      
     @Override
     public void keyPressed(KeyEvent ke) {
@@ -84,7 +87,7 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
             sphere=!sphere;
         }
         else if(ke.getKeyCode()==KeyEvent.VK_DELETE){
-            particles = new CopyOnWriteArrayList<>();
+            particles = new CopyOnWriteArrayList<Particle>();
         }
     }
 
@@ -151,6 +154,7 @@ public class Atomizer extends JPanel implements MouseInputListener, KeyListener 
         if(sphere){
             g2d.drawImage(circle, 0, 0, null);
         }
+        
     }
     
     /**
